@@ -11,6 +11,7 @@ if (cat && scoreDisplay && startButton && stopButton && pauseButton) {
     let gameInterval;
     let gameTimeout;
     const gameDuration = 30000; // 30 seconds
+    const displayDuration = 2000; // 2 seconds is time the image is displayed
     let currentPowerUp = null;
     let powerUpTimeout;
     let remainingTime;
@@ -33,7 +34,7 @@ if (cat && scoreDisplay && startButton && stopButton && pauseButton) {
         pauseButton.disabled = false;
 
         moveCat();
-        gameInterval = setInterval(moveCat, 1000);
+        gameInterval = setInterval(moveCat, displayDuration);
         startTime = Date.now();
         remainingTime = gameDuration;
         gameTimeout = setTimeout(endGame, remainingTime);
