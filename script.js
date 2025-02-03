@@ -133,7 +133,7 @@ if (cat && scoreDisplay && startButton && stopButton && pauseButton) {
 
     function spawnPowerUp() {
         const powerUps = ['slowDown', 'doublePoints', 'freeze'];
-        const randomPowerUp = powerUps[Math.floor(Math.random() * powerUps.length)];
+        const randomPowerUp = powerUps[Math.floor(Math.random() * powerUps.length)]; //random power up
         currentPowerUp = randomPowerUp;
         
         // Visual indication of power-up 
