@@ -78,6 +78,16 @@ if (cat && scoreDisplay && startButton && stopButton && pauseButton) {
         }
     }
 
+    // Final Score functionality
+    function showGameOverModal(finalScore) {
+        document.getElementById('finalScore').textContent = finalScore;
+        document.getElementById('gameOverModal').style.display = 'block';
+    }
+
+    function closeModal() {
+        document.getElementById('gameOverModal').style.display = 'none';
+    }
+
     function endGame() {
         isPlaying = false;
         isPaused = false;
@@ -88,7 +98,7 @@ if (cat && scoreDisplay && startButton && stopButton && pauseButton) {
         startButton.disabled = false;
         stopButton.disabled = true;
         pauseButton.disabled = true;
-        alert(`Game over! Your score is ${score}`);
+        showGameOverModal(score);
     }
 
     function moveCat() {
