@@ -1,5 +1,6 @@
 const cat = document.getElementById('cat');
 const scoreDisplay = document.getElementById('score');
+const countDownDisplay = document.getElementById('countdown');
 const startButton = document.getElementById('start-button');
 const stopButton = document.getElementById('stop-button');
 const pauseButton = document.getElementById('pause-button');
@@ -10,6 +11,7 @@ if (cat && scoreDisplay && startButton && stopButton && pauseButton) {
     let isPaused = false;
     let gameInterval;
     let gameTimeout;
+    let countDownInterval;
     const gameDuration = 30000; // 30 seconds
     let currentPowerUp = null;
     let powerUpTimeout;
@@ -37,9 +39,20 @@ if (cat && scoreDisplay && startButton && stopButton && pauseButton) {
         startTime = Date.now();
         remainingTime = gameDuration;
         gameTimeout = setTimeout(endGame, remainingTime);
+        remainingTime -= 1000;
+        countDownDisplay.textContent = Math.ceil(remainingTime / 1000);
+        countDownInterval = setInterval(calculateRemainingTime, 1000);
         spawnPowerUp();
     }
 
+    function calculateRemainingTime() {
+        if(!isPaused){
+            remainingTime -= 1000;
+            countDownDisplay.textContent = Math.ceil(remainingTime / 1000);
+        }
+    }
+
+        
     function stopGame() {
         if (isPlaying) {
             clearTimeout(gameTimeout);
@@ -57,12 +70,14 @@ if (cat && scoreDisplay && startButton && stopButton && pauseButton) {
                 startTime = Date.now();
                 gameTimeout = setTimeout(endGame, remainingTime);
                 gameInterval = setInterval(moveCat, 1000);
+                countDownInterval = setInterval(calculateRemainingTime, 1000);
                 spawnPowerUp();
             } else {
                 // Pause game
                 isPaused = true;
                 pauseButton.textContent = 'Resume Game';
                 clearInterval(gameInterval);
+                clearInterval(countDownInterval);
                 clearTimeout(gameTimeout);
                 clearTimeout(powerUpTimeout);
                 remainingTime -= Date.now() - startTime;
@@ -84,6 +99,7 @@ if (cat && scoreDisplay && startButton && stopButton && pauseButton) {
         clearInterval(gameInterval);
         clearTimeout(gameTimeout);
         clearTimeout(powerUpTimeout);
+        clearInterval(countDownInterval);
         cat.style.display = 'none';
         startButton.disabled = false;
         stopButton.disabled = true;
