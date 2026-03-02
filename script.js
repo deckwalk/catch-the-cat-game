@@ -3,8 +3,9 @@ const scoreDisplay = document.getElementById('score');
 const startButton = document.getElementById('start-button');
 const stopButton = document.getElementById('stop-button');
 const pauseButton = document.getElementById('pause-button');
+const resetScoreButton = document.getElementById('reset-score-button');
 
-if (cat && scoreDisplay && startButton && stopButton && pauseButton) {
+if (cat && scoreDisplay && startButton && stopButton && pauseButton && resetScoreButton) {
     let score = 0;
     let isPlaying = false;
     let isPaused = false;
@@ -19,6 +20,7 @@ if (cat && scoreDisplay && startButton && stopButton && pauseButton) {
     startButton.addEventListener('click', startGame);
     stopButton.addEventListener('click', stopGame);
     pauseButton.addEventListener('click', togglePauseGame);
+    resetScoreButton.addEventListener('click', resetScore);
     cat.addEventListener('click', debounce(catchCat, 200));
     document.addEventListener('keydown', handleKeyPress);
 
@@ -31,6 +33,7 @@ if (cat && scoreDisplay && startButton && stopButton && pauseButton) {
         startButton.disabled = true;
         stopButton.disabled = false;
         pauseButton.disabled = false;
+        resetScoreButton.disabled = false;
 
         moveCat();
         gameInterval = setInterval(moveCat, 1000);
@@ -88,6 +91,7 @@ if (cat && scoreDisplay && startButton && stopButton && pauseButton) {
         startButton.disabled = false;
         stopButton.disabled = true;
         pauseButton.disabled = true;
+        resetScoreButton.disabled = true;
         alert(`Game over! Your score is ${score}`);
     }
 
@@ -120,6 +124,13 @@ if (cat && scoreDisplay && startButton && stopButton && pauseButton) {
             stopGame();
         } else if (event.code === 'KeyP') {
             togglePauseGame();
+        }
+    }
+
+    function resetScore() {
+        if (isPlaying && !isPaused) {
+            score = 0;
+            scoreDisplay.textContent = score;
         }
     }
 
@@ -156,4 +167,5 @@ if (cat && scoreDisplay && startButton && stopButton && pauseButton) {
     if (!startButton) console.error('Start button not found');
     if (!stopButton) console.error('Stop button not found');
     if (!pauseButton) console.error('Pause button not found');
+    if (!resetScoreButton) console.error('Reset score button not found');
 }

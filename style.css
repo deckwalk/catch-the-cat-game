@@ -53,3 +53,19 @@ body {
     border: none;
     border-radius: 5px;
 }
+
+#reset-score-button {
+    padding: 10px 20px;
+    font-size: 16px;
+    margin-top: 20px;
+    cursor: pointer;
+    background-color: #6c63ff;
+    color: white;
+    border: none;
+    border-radius: 5px;
+}
+
+#reset-score-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
