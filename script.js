@@ -1,159 +1,267 @@
-const cat = document.getElementById('cat');
-const scoreDisplay = document.getElementById('score');
-const startButton = document.getElementById('start-button');
-const stopButton = document.getElementById('stop-button');
-const pauseButton = document.getElementById('pause-button');
+const cat = document.getElementById("cat");
+const scoreDisplay = document.getElementById("score");
+const highScoreDisplay = document.getElementById("high-score");
+const powerUpDisplay = document.getElementById("power-up");
 
-if (cat && scoreDisplay && startButton && stopButton && pauseButton) {
-    let score = 0;
-    let isPlaying = false;
-    let isPaused = false;
-    let gameInterval;
-    let gameTimeout;
-    const gameDuration = 30000; // 30 seconds
-    let currentPowerUp = null;
-    let powerUpTimeout;
-    let remainingTime;
-    let startTime;
+const startButton = document.getElementById("start-button");
+const stopButton = document.getElementById("stop-button");
+const pauseButton = document.getElementById("pause-button");
 
-    startButton.addEventListener('click', startGame);
-    stopButton.addEventListener('click', stopGame);
-    pauseButton.addEventListener('click', togglePauseGame);
-    cat.addEventListener('click', debounce(catchCat, 200));
-    document.addEventListener('keydown', handleKeyPress);
+let score = 0;
+let highScore = 0;
 
-    function startGame() {
-        score = 0;
-        scoreDisplay.textContent = score;
-        isPlaying = true;
+let isPlaying = false;
+let isPaused = false;
+
+let gameInterval;
+let gameTimeout;
+let powerUpTimeout;
+
+const gameDuration = 30000;
+
+let remainingTime = gameDuration;
+let startTime;
+
+let currentPowerUp = null;
+
+let lastPosition = {
+    x: 0,
+    y: 0
+};
+
+startButton.addEventListener("click", startGame);
+stopButton.addEventListener("click", stopGame);
+pauseButton.addEventListener("click", togglePause);
+
+cat.addEventListener("click", debounce(catchCat, 150));
+
+document.addEventListener("keydown", handleKeyboard);
+
+function startGame() {
+
+    score = 0;
+    scoreDisplay.textContent = score;
+
+    isPlaying = true;
+    isPaused = false;
+
+    startButton.disabled = true;
+    stopButton.disabled = false;
+    pauseButton.disabled = false;
+
+    pauseButton.textContent = "Pause Game";
+
+    cat.style.display = "block";
+
+    moveCat();
+
+    gameInterval = setInterval(moveCat, 1000);
+
+    startTime = Date.now();
+    remainingTime = gameDuration;
+
+    gameTimeout = setTimeout(endGame, remainingTime);
+
+    spawnPowerUp();
+}
+
+function stopGame() {
+
+    if (!isPlaying) return;
+
+    if (confirm("Stop the current game?")) {
+        endGame();
+    }
+
+}
+
+function togglePause() {
+
+    if (!isPlaying) return;
+
+    if (isPaused) {
+
         isPaused = false;
-        cat.style.display = 'block';
-        startButton.disabled = true;
-        stopButton.disabled = false;
-        pauseButton.disabled = false;
+        pauseButton.textContent = "Pause Game";
 
-        moveCat();
-        gameInterval = setInterval(moveCat, 1000);
         startTime = Date.now();
-        remainingTime = gameDuration;
+
         gameTimeout = setTimeout(endGame, remainingTime);
+
+        gameInterval = setInterval(moveCat, 1000);
+
         spawnPowerUp();
-    }
 
-    function stopGame() {
-        if (isPlaying) {
-            clearTimeout(gameTimeout);
-            clearTimeout(powerUpTimeout);
-            endGame();
-        }
-    }
+    } else {
 
-    function togglePauseGame() {
-        if (isPlaying) {
-            if (isPaused) {
-                // Resume game
-                isPaused = false;
-                pauseButton.textContent = 'Pause Game';
-                startTime = Date.now();
-                gameTimeout = setTimeout(endGame, remainingTime);
-                gameInterval = setInterval(moveCat, 1000);
-                spawnPowerUp();
-            } else {
-                // Pause game
-                isPaused = true;
-                pauseButton.textContent = 'Resume Game';
-                clearInterval(gameInterval);
-                clearTimeout(gameTimeout);
-                clearTimeout(powerUpTimeout);
-                remainingTime -= Date.now() - startTime;
-            }
-        }
-    }
+        isPaused = true;
+        pauseButton.textContent = "Resume Game";
 
-    function catchCat() {
-        if (isPlaying && !isPaused) {
-            score += (currentPowerUp === 'doublePoints') ? 2 : 1;
-            scoreDisplay.textContent = score;
-            moveCat();
-        }
-    }
-
-    function endGame() {
-        isPlaying = false;
-        isPaused = false;
         clearInterval(gameInterval);
         clearTimeout(gameTimeout);
         clearTimeout(powerUpTimeout);
-        cat.style.display = 'none';
-        startButton.disabled = false;
-        stopButton.disabled = true;
-        pauseButton.disabled = true;
-        alert(`Game over! Your score is ${score}`);
+
+        remainingTime -= Date.now() - startTime;
     }
 
-    function moveCat() {
-        if (!isPaused) {
-            requestAnimationFrame(() => {
-                if (currentPowerUp === 'freeze') {
-                    cat.style.left = `${lastPosition.x}px`;
-                    cat.style.top = `${lastPosition.y}px`;
-                } else {
-                    const speed = (currentPowerUp === 'slowDown') ? 0.5 : 1;
-                    const x = Math.random() * (window.innerWidth - cat.offsetWidth) * speed;
-                    const y = Math.random() * (window.innerHeight - cat.offsetHeight) * speed;
-                    cat.style.left = `${x}px`;
-                    cat.style.top = `${y}px`;
-                    lastPosition = { x, y };
-                }
-            });
+}
+
+function catchCat() {
+
+    if (!isPlaying || isPaused) return;
+
+    if (currentPowerUp === "doublePoints") {
+        score += 2;
+    } else {
+        score++;
+    }
+
+    scoreDisplay.textContent = score;
+
+    moveCat();
+
+}
+
+function endGame() {
+
+    clearInterval(gameInterval);
+    clearTimeout(gameTimeout);
+    clearTimeout(powerUpTimeout);
+
+    if (score > highScore) {
+        highScore = score;
+        highScoreDisplay.textContent = highScore;
+    }
+
+    isPlaying = false;
+    isPaused = false;
+
+    currentPowerUp = null;
+
+    powerUpDisplay.textContent = "None";
+
+    cat.style.display = "none";
+
+    startButton.disabled = false;
+    stopButton.disabled = true;
+    pauseButton.disabled = true;
+
+    pauseButton.textContent = "Pause Game";
+
+    alert(`🎉 Game Over!
+
+Final Score: ${score}
+
+High Score: ${highScore}`);
+
+}
+
+function moveCat() {
+
+    if (isPaused) return;
+
+    requestAnimationFrame(() => {
+
+        if (currentPowerUp === "freeze") {
+
+            cat.style.left = `${lastPosition.x}px`;
+            cat.style.top = `${lastPosition.y}px`;
+            return;
         }
+
+        const speed = currentPowerUp === "slowDown" ? 0.5 : 1;
+
+        const x = Math.random() * (window.innerWidth - cat.offsetWidth) * speed;
+        const y = Math.random() * (window.innerHeight - cat.offsetHeight) * speed;
+
+        cat.style.left = `${x}px`;
+        cat.style.top = `${y}px`;
+
+        lastPosition = { x, y };
+
+    });
+
+}
+
+function spawnPowerUp() {
+
+    const powerUps = [
+        "doublePoints",
+        "slowDown",
+        "freeze"
+    ];
+
+    currentPowerUp = powerUps[Math.floor(Math.random() * powerUps.length)];
+
+    powerUpDisplay.textContent = currentPowerUp;
+
+    switch (currentPowerUp) {
+
+        case "doublePoints":
+            cat.style.border = "8px solid green";
+            break;
+
+        case "slowDown":
+            cat.style.border = "8px solid blue";
+            break;
+
+        case "freeze":
+            cat.style.border = "8px solid red";
+            break;
+
     }
 
-    function handleKeyPress(event) {
-        if (event.code === 'Space') {
-            if (!isPlaying) {
+    setTimeout(() => {
+
+        currentPowerUp = null;
+        powerUpDisplay.textContent = "None";
+        cat.style.border = "none";
+
+    }, 5000);
+
+    powerUpTimeout = setTimeout(spawnPowerUp, Math.random() * 10000 + 5000);
+
+}
+
+function handleKeyboard(event) {
+
+    switch (event.code) {
+
+        case "Space":
+
+            if (!isPlaying)
                 startGame();
-            } else {
+            else
                 catchCat();
-            }
-        } else if (event.code === 'Escape') {
+
+            break;
+
+        case "Escape":
             stopGame();
-        } else if (event.code === 'KeyP') {
-            togglePauseGame();
-        }
+            break;
+
+        case "KeyP":
+            togglePause();
+            break;
+
     }
 
-    function debounce(func, wait) {
-        let timeout;
-        return function(...args) {
-            clearTimeout(timeout);
-            timeout = setTimeout(() => func(...args), wait);
-        };
-    }
+}
 
-    function spawnPowerUp() {
-        const powerUps = ['slowDown', 'doublePoints', 'freeze'];
-        const randomPowerUp = powerUps[Math.floor(Math.random() * powerUps.length)];
-        currentPowerUp = randomPowerUp;
-        
-        // Visual indication of power-up 
-        cat.style.border = '8px solid orange';
-        
-        // Power-up duration
-        setTimeout(() => {
-            currentPowerUp = null;
-            cat.style.border = 'none';
-        }, 5000);
+function debounce(fn, delay) {
 
-        // Schedule next power-up
-        powerUpTimeout = setTimeout(spawnPowerUp, Math.random() * 10000 + 5000);
-    }
+    let timeout;
 
-    let lastPosition = { x: 0, y: 0 };
-} else {
-    if (!cat) console.error('Cat element not found');
-    if (!scoreDisplay) console.error('Score display element not found');
-    if (!startButton) console.error('Start button not found');
-    if (!stopButton) console.error('Stop button not found');
-    if (!pauseButton) console.error('Pause button not found');
+    return (...args) => {
+
+        clearTimeout(timeout);
+
+        timeout = setTimeout(() => {
+
+            fn(...args);
+
+        }, delay);
+
+    };
+
 }
